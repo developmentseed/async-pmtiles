@@ -29,7 +29,7 @@ async def metadata(url: str = Query(..., description="PMTiles archive URL.")):
     async with Reader(url) as src:
         return await src.metadata()
 
-@spp.get("/tiles/{z}/{x}/{y}", response_class=Response)
+@app.get("/tiles/{z}/{x}/{y}", response_class=Response)
 async def tiles(
     z: int = Path(ge=0, le=30, description="TMS tiles's zoom level"),
     x: int = Path(description="TMS tiles's column"),

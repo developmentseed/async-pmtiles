@@ -1,10 +1,9 @@
 """FileSystems for PMTiles Reader."""
 
 import abc
-import os
 from contextlib import AsyncExitStack
 from dataclasses import dataclass, field
-from typing import Any, Dict, Optional
+from typing import Any
 from urllib.parse import urlparse
 
 import aiofiles
@@ -15,6 +14,12 @@ try:
 
 except ImportError:  # pragma: nocover
     aioboto3 = None  # type: ignore
+
+try:
+    from gcloud.aio.storage import Storage as GcpStorage
+
+except ImportError:  # pragma: nocover
+    GcpStorage = None  # type: ignore
 
 
 @dataclass
@@ -48,6 +53,9 @@ class FileSystem(abc.ABC):
 
         elif parsed.scheme == "s3":
             return S3FileSystem(filepath, **kwargs)
+
+        elif parsed.scheme == "gs":
+            return GcsFileSystem(filepath, **kwargs)
 
         elif parsed.scheme == "file":
             return LocalFileSystem(filepath, **kwargs)
@@ -131,4 +139,32 @@ class S3FileSystem(FileSystem):
             self._session.resource("s3")
         )
         self._obj = await self._resource.Object(parsed.netloc, parsed.path.strip("/"))
+        return self
+
+
+@dataclass
+class GcsFileSystem(FileSystem):
+    """GCS filesystem"""
+
+    _client: GcpStorage = field(init=False)
+    _bucket: str = field(init=False)
+    _obj: str = field(init=False)
+
+    def __post_init__(self):
+        """Check for dependency."""
+        assert (
+            GcpStorage is not None
+        ), "'gcloud-aio-storage' must be installed to use GCS FileSystem"
+
+    async def get(self, offset: int, length: int) -> bytes:
+        """Perform a range request"""
+        headers = {"Range": f"bytes={offset}-{offset + length}"}
+        return await self._client.download(self._bucket, self._obj, headers=headers)
+
+    async def __aenter__(self):
+        """Async context management"""
+        parsed_path = urlparse(self.filepath)
+        self._client = await self.ctx.enter_async_context(GcpStorage())
+        self._bucket = parsed_path.netloc
+        self._obj = parsed_path.path.strip("/")
         return self

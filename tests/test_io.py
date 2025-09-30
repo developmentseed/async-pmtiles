@@ -4,7 +4,13 @@ import os
 
 import pytest
 
-from aiopmtiles.io import FileSystem, HttpFileSystem, LocalFileSystem, S3FileSystem
+from aiopmtiles.io import (
+    FileSystem,
+    GcsFileSystem,
+    HttpFileSystem,
+    LocalFileSystem,
+    S3FileSystem,
+)
 
 FIXTURES_DIR = os.path.join(os.path.dirname(__file__), "fixtures")
 VECTOR_PMTILES = os.path.join(FIXTURES_DIR, "protomaps(vector)ODbL_firenze.pmtiles")
@@ -16,6 +22,7 @@ VECTOR_PMTILES = os.path.join(FIXTURES_DIR, "protomaps(vector)ODbL_firenze.pmtil
         ("myfile.pmtiles", LocalFileSystem),
         ("file:///myfile.pmtiles", LocalFileSystem),
         ("s3://bucket/myfile.pmtiles", S3FileSystem),
+        ("gs://bucket/myfile.pmtiles", GcsFileSystem),
         ("http://url.io/myfile.pmtiles", HttpFileSystem),
         ("https://url.io/myfile.pmtiles", HttpFileSystem),
     ],

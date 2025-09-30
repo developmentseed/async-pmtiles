@@ -28,6 +28,10 @@ dependencies = [
 aws = [
     "aioboto3"
 ]
+gcp = [
+    "gcloud-aio-auth",
+    "gcloud-aio-storage"
+]
 test = [
     "pytest",
     "pytest-cov",
@@ -69,9 +73,9 @@ parallel = true
 
 [tool.coverage.report]
 exclude_lines = [
-  "no cov",
-  "if __name__ == .__main__.:",
-  "if TYPE_CHECKING:",
+    "no cov",
+    "if __name__ == .__main__.:",
+    "if TYPE_CHECKING:",
 ]
 
 [tool.isort]
