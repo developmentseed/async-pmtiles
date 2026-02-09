@@ -1,12 +1,13 @@
 """Async version of protomaps/PMTiles."""
 
+from __future__ import annotations
+
 import gzip
 import json
-from contextlib import AsyncExitStack
 from dataclasses import dataclass, field
-from typing import Dict, Optional, Protocol, Tuple
+from typing import TYPE_CHECKING
 
-from aiocache import Cache, cached
+from obspec import GetRangeAsync
 from pmtiles.tile import (
     Compression,
     TileType,
@@ -16,85 +17,93 @@ from pmtiles.tile import (
     zxy_to_tileid,
 )
 
-from aiopmtiles.io import FileSystem
+if TYPE_CHECKING:
+    import sys
 
+    from pmtiles.tile import HeaderDict
 
-class _GetBytes(Protocol):
-    async def __call__(self, offset: int, length: int) -> bytes:
-        ...
+    if sys.version_info >= (3, 12):
+        from collections.abc import Buffer
+    else:
+        from typing_extensions import Buffer
 
 
 @dataclass
-class Reader:
+class PMTilesReader:
     """PMTiles Reader."""
 
-    filepath: str
-    options: Optional[Dict] = field(default_factory=dict)
+    path: str
+    store: GetRangeAsync
 
-    fs: FileSystem = field(init=False)
-
-    _header: Dict = field(init=False)
+    header: HeaderDict = field(init=False)
     _header_offset: int = field(default=0, init=False)
     _header_length: int = field(default=127, init=False)
 
-    _ctx: AsyncExitStack = field(default_factory=AsyncExitStack)
-
     async def __aenter__(self):
         """Support using with Context Managers."""
-        self.fs = await self._ctx.enter_async_context(
-            FileSystem.create_from_filepath(self.filepath, **self.options)
-        )
 
-        header_values = await self._get(self._header_offset, self._header_length)
-        spec_version = header_values[7]
+        header_values = await self.store.get_range_async(
+            self.path,
+            start=self._header_offset,
+            length=self._header_length,
+        )
+        spec_version = memoryview(header_values)[7]
         assert spec_version == 3, "Only Version 3 of PMTiles specification is supported"
 
-        self._header = deserialize_header(header_values)
+        self.header = deserialize_header(memoryview(header_values))
 
         return self
 
     async def __aexit__(self, exc_type, exc_value, traceback):
         """Support using with Context Managers."""
-        await self._ctx.__aexit__(exc_type, exc_value, traceback)
+        pass
 
-    @cached(
-        cache=Cache.MEMORY,
-        key_builder=lambda f, self, offset, length: f"{self.filepath}-{offset}-{length}",
-    )
-    async def _get(self, offset: int, length: int) -> bytes:
-        """Get Bytes."""
-        return await self.fs.get(offset, length)
-
-    async def metadata(self) -> Dict:
+    async def metadata(self) -> dict:
         """Return PMTiles Metadata."""
-        metadata = await self._get(
-            self._header["metadata_offset"],
-            self._header["metadata_length"] - 1,
+        metadata = await self.store.get_range_async(
+            self.path,
+            start=self.header["metadata_offset"],
+            length=self.header["metadata_length"],
         )
-        if self._header["internal_compression"] == Compression.GZIP:
-            metadata = gzip.decompress(metadata)
+        match self.header["internal_compression"]:
+            case Compression.NONE:
+                metadata = bytes(metadata)
+            case Compression.GZIP:
+                metadata = gzip.decompress(metadata)
+            case Compression.BROTLI:
+                raise NotImplementedError("Brotli compression is not yet supported")
+            case Compression.ZSTD:
+                raise NotImplementedError("Zstd compression is not yet supported")
+            case Compression.UNKNOWN:
+                # TODO: what to do here? Maybe just warn?
+                raise NotImplementedError("Unknown compression is not supported")
+            case _:
+                raise NotImplementedError()
 
         return json.loads(metadata)
 
-    async def get_tile(self, z, x, y) -> Optional[bytes]:
+    async def get_tile(self, z, x, y) -> Buffer | None:
         """Get Tile Data."""
         tile_id = zxy_to_tileid(z, x, y)
 
-        dir_offset = self._header["root_offset"]
-        dir_length = self._header["root_length"]
+        dir_offset = self.header["root_offset"]
+        dir_length = self.header["root_length"]
         for _ in range(0, 4):  # max depth
-            directory_values = await self._get(dir_offset, dir_length - 1)
+            directory_values = await self.store.get_range_async(
+                self.path, start=dir_offset, length=dir_length
+            )
             directory = deserialize_directory(directory_values)
 
             if result := find_tile(directory, tile_id):
                 if result.run_length == 0:
-                    dir_offset = self._header["leaf_directory_offset"] + result.offset
+                    dir_offset = self.header["leaf_directory_offset"] + result.offset
                     dir_length = result.length
 
                 else:
-                    data = await self._get(
-                        self._header["tile_data_offset"] + result.offset,
-                        result.length - 1,
+                    data = await self.store.get_range_async(
+                        self.path,
+                        start=self.header["tile_data_offset"] + result.offset,
+                        length=result.length,
                     )
                     return data
 
@@ -103,43 +112,43 @@ class Reader:
     @property
     def minzoom(self) -> int:
         """Return minzoom."""
-        return self._header["min_zoom"]
+        return self.header["min_zoom"]
 
     @property
     def maxzoom(self) -> int:
         """Return maxzoom."""
-        return self._header["max_zoom"]
+        return self.header["max_zoom"]
 
     @property
-    def bounds(self) -> Tuple[float, float, float, float]:
+    def bounds(self) -> tuple[float, float, float, float]:
         """Return Archive Bounds."""
         return (
-            self._header["min_lon_e7"] / 10000000,
-            self._header["min_lat_e7"] / 10000000,
-            self._header["max_lon_e7"] / 10000000,
-            self._header["max_lat_e7"] / 10000000,
+            self.header["min_lon_e7"] / 10000000,
+            self.header["min_lat_e7"] / 10000000,
+            self.header["max_lon_e7"] / 10000000,
+            self.header["max_lat_e7"] / 10000000,
         )
 
     @property
-    def center(self) -> Tuple[float, float, int]:
+    def center(self) -> tuple[float, float, int]:
         """Return Archive center."""
         return (
-            self._header["center_lon_e7"] / 10000000,
-            self._header["center_lat_e7"] / 10000000,
-            self._header["center_zoom"],
+            self.header["center_lon_e7"] / 10000000,
+            self.header["center_lat_e7"] / 10000000,
+            self.header["center_zoom"],
         )
 
     @property
     def is_vector(self) -> bool:
         """Return tile type."""
-        return self._header["tile_type"] == TileType.MVT
+        return self.header["tile_type"] == TileType.MVT
 
     @property
     def tile_compression(self) -> Compression:
         """Return tile compression type."""
-        return self._header["tile_compression"]
+        return self.header["tile_compression"]
 
     @property
     def tile_type(self) -> TileType:
         """Return tile type."""
-        return self._header["tile_type"]
+        return self.header["tile_type"]
