@@ -50,7 +50,8 @@ class PMTilesReader:
         spec_version = memoryview(header_values)[7]
         assert spec_version == 3, "Only Version 3 of PMTiles specification is supported"
 
-        self.header = deserialize_header(header_values)
+        # https://github.com/protomaps/PMTiles/pull/638 allows passing a buffer directly
+        self.header = deserialize_header(bytes(header_values))
 
         return self
 
