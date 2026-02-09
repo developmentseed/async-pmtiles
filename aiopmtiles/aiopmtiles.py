@@ -50,7 +50,7 @@ class PMTilesReader:
         spec_version = memoryview(header_values)[7]
         assert spec_version == 3, "Only Version 3 of PMTiles specification is supported"
 
-        self.header = deserialize_header(memoryview(header_values))
+        self.header = deserialize_header(header_values)
 
         return self
 
