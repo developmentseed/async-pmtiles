@@ -32,8 +32,10 @@ build-backend = "uv_build"
 
 [dependency-groups]
 dev = [
+    "build>=1.4.0",
     "ipykernel>=7.2.0",
     "obstore>=0.8.2",
+    "pytest>=9.0.2",
 ]
 
 [tool.ruff]
