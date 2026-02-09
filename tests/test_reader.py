@@ -60,5 +60,5 @@ async def test_reader_bad_spec():
     """Should raise an error if not spec == 3."""
     store = LocalStore(FIXTURES_DIR)
 
-    with pytest.raises(AssertionError):
+    with pytest.raises(ValueError, match="Unsupported PMTiles spec version"):
         await PMTilesReader.open(V2_PMTILES, store=store)
