@@ -2,6 +2,6 @@
 
 __version__ = "0.1.0"
 
-from .aiopmtiles import PMTilesReader
+from ._reader import PMTilesReader
 
 __all__ = ["PMTilesReader"]

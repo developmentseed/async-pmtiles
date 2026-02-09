@@ -1,5 +1,5 @@
 [project]
-name = "aiopmtiles"
+name = "async-pmtiles"
 version = "0.1.0"
 description = "Async version of protomaps/PMTiles."
 readme = "README.md"
@@ -23,8 +23,8 @@ requires-python = ">=3.11"
 dependencies = ["obspec>=0.1.0", "pmtiles>=3.4.1"]
 
 [project.urls]
-Source = "https://github.com/developmentseed/aiopmtiles"
-Documentation = "https://developmentseed.org/aiopmtiles/"
+Source = "https://github.com/developmentseed/async-pmtiles"
+Documentation = "https://developmentseed.org/async-pmtiles/"
 
 [build-system]
 requires = ["uv_build>=0.8.8,<0.9.0"]
@@ -40,11 +40,5 @@ dev = [
 ]
 
 [tool.ruff]
-select = [
-    "B",  # flake8-bugbear
-    "C",  # flake8-comprehensions
-    "D1", # pydocstyle errors
-    "E",  # pycodestyle errors
-    "I",  # isort import formatting
-    "W",  # pycodestyle warnings
-]
+select = ["ALL"]
+ignore = ["EM", "TD"]
