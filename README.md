@@ -71,7 +71,7 @@ src.tile_type
 src.tile_compression
 
 # Get Tile
-data = await src.get_tile(0, 0, 0)
+data = await src.get_tile(x=0, y=0, z=0)
 ```
 
 ## Contribution & Development

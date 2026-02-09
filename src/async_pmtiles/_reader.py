@@ -78,7 +78,7 @@ class PMTilesReader:
 
         return json.loads(metadata)
 
-    async def get_tile(self, z: int, x: int, y: int) -> Buffer | None:
+    async def get_tile(self, x: int, y: int, z: int) -> Buffer | None:
         """Get Tile Data."""
         tile_id = zxy_to_tileid(z, x, y)
 
