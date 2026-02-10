@@ -1,34 +1,57 @@
-name: Publish docs via GitHub Pages
+name: Publish Python docs
 
+# Only run on new tags starting with `v`
 on:
   push:
-    branches:
-      - main
-    paths:
-      # Only rebuild website when docs have changed
-      - 'README.md'
-      - 'docs/**'
-      - 'mkdocs.yml'
-      - 'rio_stac/**.py'
-      - .github/workflows/deploy_mkdocs.yml
+    tags:
+      - "v*"
+  workflow_dispatch:
+
+# https://stackoverflow.com/a/77412363
+permissions:
+  contents: write
+  pages: write
 
 jobs:
   build:
-    name: Deploy docs
+    name: Deploy Python docs
     runs-on: ubuntu-latest
+    # Used for configuring social plugin in mkdocs.yml
+    # Unclear if this is always set in github actions
+    env:
+      CI: "TRUE"
     steps:
-      - name: Checkout main
-        uses: actions/checkout@v5
-
-      - name: Set up Python 3.12
-        uses: actions/setup-python@v6
+      - uses: actions/checkout@v4
+        # We need to additionally fetch the gh-pages branch for mike deploy
         with:
-          python-version: 3.12
+          fetch-depth: 0
 
-      - name: Install dependencies
-        run: |
-          python -m pip install --upgrade pip
-          python -m pip install -e .["doc"]
+      - uses: astral-sh/setup-uv@v5
+        with:
+          enable-cache: true
 
       - name: Deploy docs
-        run: mkdocs gh-deploy -f docs/mkdocs.yml --force
+        env:
+          GIT_COMMITTER_NAME: CI
+          GIT_COMMITTER_EMAIL: ci-bot@example.com
+        run: |
+          # Get most recent git tag
+          # https://stackoverflow.com/a/7261049
+          # https://stackoverflow.com/a/3867811
+          # We don't use {{github.ref_name}} because if triggered manually, it
+          # will be a branch name instead of a tag version.
+          VERSION=$(git describe --tags --match="v*" --abbrev=0)
+          echo $VERSION
+
+          # Only push publish docs as latest version if no letters in git tag
+          # after the first character
+          # (usually the git tag will have v as the first character)
+          # Note the `cut` index is 1-ordered
+          if echo $VERSION | cut -c 2- | grep -q "[A-Za-z]"; then
+            echo "Is beta version"
+            # For beta versions publish but don't set as latest
+            uv run --group docs mike deploy $VERSION --update-aliases --push
+          else
+            echo "Is NOT beta version"
+            uv run --group docs mike deploy $VERSION latest --update-aliases --push
+          fi

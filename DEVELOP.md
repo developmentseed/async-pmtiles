@@ -23,3 +23,15 @@ This repo is set to use `pre-commit` to run *isort*, *flake8*, *pydocstring*, *b
 ```bash
 $ pre-commit install
 ```
+
+## Documentation
+
+### Building locally
+
+```
+uv run --group docs mkdocs serve
+```
+
+### Publishing docs
+
+Documentation is automatically published when a new tag with `v*` is pushed to `main`. Alternatively, you can manually publish docs by triggering the docs publish workflow from the GitHub actions UI.
