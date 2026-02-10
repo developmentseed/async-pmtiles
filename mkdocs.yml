@@ -27,6 +27,7 @@ extra:
 nav:
   - Home: "index.md"
   - Usage: "usage.md"
+  - API Reference: "api.md"
   - Changelog: "CHANGELOG.md"
   - Contributing: "DEVELOP.md"
 
