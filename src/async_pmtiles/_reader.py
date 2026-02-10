@@ -5,7 +5,7 @@ from __future__ import annotations
 import gzip
 import json
 from dataclasses import dataclass
-from typing import TYPE_CHECKING, Self
+from typing import TYPE_CHECKING, Protocol, Self
 
 from pmtiles.tile import (
     Compression,
@@ -19,13 +19,28 @@ from pmtiles.tile import (
 if TYPE_CHECKING:
     import sys
 
-    from obspec import GetRangeAsync
     from pmtiles.tile import HeaderDict
 
     if sys.version_info >= (3, 12):
         from collections.abc import Buffer
     else:
         from typing_extensions import Buffer
+
+
+class GetRangeAsync(Protocol):
+    async def get_range_async(
+        self,
+        path: str,
+        *,
+        start: int,
+        end: int | None = None,
+        length: int | None = None,
+    ) -> Buffer:
+        """Call `get_range` asynchronously.
+
+        Refer to the documentation for [GetRange][obspec.GetRange].
+        """
+        ...
 
 
 @dataclass()
