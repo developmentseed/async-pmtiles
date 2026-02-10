@@ -1,11 +1,15 @@
 """Test PMTilesReader."""
 
+from collections.abc import Buffer
+from dataclasses import dataclass
 from pathlib import Path
 
 import pytest
+from aiohttp import ClientSession
 from obstore.store import LocalStore
+from pmtiles.tile import Compression, TileType
 
-from async_pmtiles import PMTilesReader
+from async_pmtiles import PMTilesReader, Store
 
 FIXTURES_DIR = Path(__file__).parent / "fixtures"
 VECTOR_PMTILES = "protomaps(vector)ODbL_firenze.pmtiles"
@@ -24,10 +28,8 @@ async def test_reader_vector():
     assert src.minzoom == 0
     assert src.maxzoom == 14
     assert src.center[2] == 0
-    assert src.is_vector
-    assert src.tile_compression.name == "GZIP"
-
-    assert src.tile_type.name == "MVT"
+    assert src.tile_compression == Compression.GZIP
+    assert src.tile_type == TileType.MVT
 
     metadata = await src.metadata()
     assert "attribution" in metadata
@@ -45,10 +47,8 @@ async def test_reader_raster():
     assert src.minzoom == 8
     assert src.maxzoom == 15
     assert src.center[2] == 12
-    assert not src.is_vector
-    assert src.tile_compression.name == "NONE"
-
-    assert src.tile_type.name == "WEBP"
+    assert src.tile_compression == Compression.NONE
+    assert src.tile_type == TileType.WEBP
 
     metadata = await src.metadata()
     assert "attribution" in metadata
@@ -62,3 +62,35 @@ async def test_reader_bad_spec():
 
     with pytest.raises(ValueError, match="Unsupported PMTiles spec version"):
         await PMTilesReader.open(V2_PMTILES, store=store)
+
+
+@dataclass
+class AiohttpAdapter(Store):
+    session: ClientSession
+
+    async def get_range_async(
+        self,
+        path: str,
+        *,
+        start: int,
+        length: int,
+    ) -> Buffer:
+        inclusive_end = start + length - 1
+        headers = {"Range": f"bytes={start}-{inclusive_end}"}
+        async with self.session.get(path, headers=headers) as response:
+            return await response.read()
+
+
+@pytest.mark.asyncio
+async def test_obspec_aiohttp():
+    async with ClientSession() as session:
+        store = AiohttpAdapter(session)
+        url = "https://r2-public.protomaps.com/protomaps-sample-datasets/cb_2018_us_zcta510_500k.pmtiles"
+        src = await PMTilesReader.open(url, store=store)
+
+        assert src.header
+        assert src.bounds == (-176.684714, -14.37374, 145.830418, 71.341223)
+        assert src.minzoom == 0
+        assert src.maxzoom == 7
+        assert src.tile_compression == Compression.GZIP
+        assert src.tile_type == TileType.MVT

@@ -27,33 +27,69 @@ if TYPE_CHECKING:
         from typing_extensions import Buffer
 
 
-class GetRangeAsync(Protocol):
+class Store(Protocol):
+    """A generic protocol for accessing byte ranges of files.
+
+    This is compatible with [obspec.GetRangeAsync][obspec.GetRangeAsync] and is
+    implemented by [obstore] stores, such as [S3Store][obstore.store.S3Store],
+    [GCSStore][obstore.store.GCSStore], and [AzureStore][obstore.store.AzureStore].
+
+    [obstore]: https://developmentseed.org/obstore/latest/
+    """
+
     async def get_range_async(
         self,
         path: str,
         *,
         start: int,
-        end: int | None = None,
-        length: int | None = None,
+        length: int,
     ) -> Buffer:
-        """Call `get_range` asynchronously.
+        """Asynchronously fetch a byte range from a file.
 
-        Refer to the documentation for [GetRange][obspec.GetRange].
+        Args:
+            path: The path to the file within the store.
+            start: The starting byte offset of the range to fetch.
+            length: The length of the range to fetch.
+
+        Returns:
+            Byte buffer.
+
         """
         ...
 
 
 @dataclass()
 class PMTilesReader:
-    """PMTiles Reader."""
+    """An asynchronous [PMTiles] Reader.
+
+    [PMTiles]: https://docs.protomaps.com/
+    """
 
     path: str
-    store: GetRangeAsync
+    """The path within the store to the PMTiles file."""
+
+    store: Store
+    """A reference to the store used for fetching byte ranges."""
+
     header: HeaderDict
+    """The underlying raw PMTiles header metadata."""
 
     @classmethod
-    async def open(cls, path: str, store: GetRangeAsync) -> Self:
-        """Open a PMTiles file."""
+    async def open(cls, path: str, *, store: Store) -> Self:
+        """Open a PMTiles file.
+
+        Args:
+            path: The path within the store to the PMTiles file.
+            store: A generic "store" that implements fetching byte ranges
+                asynchronously.
+
+        Raises:
+            ValueError: If the PMTiles version is unsupported.
+
+        Returns:
+            An instance of PMTilesReader.
+
+        """
         header_values = await store.get_range_async(
             path,
             start=0,
@@ -70,7 +106,7 @@ class PMTilesReader:
         return cls(path=path, store=store, header=header)
 
     async def metadata(self) -> dict:
-        """Return PMTiles Metadata."""
+        """Load user-defined metadata stored in the PMTiles archive."""
         metadata = await self.store.get_range_async(
             self.path,
             start=self.header["metadata_offset"],
@@ -94,7 +130,7 @@ class PMTilesReader:
         return json.loads(metadata)
 
     async def get_tile(self, x: int, y: int, z: int) -> Buffer | None:
-        """Get Tile Data."""
+        """Load data for a specific tile given its x, y, and z coordinates."""
         tile_id = zxy_to_tileid(z, x, y)
 
         dir_offset = self.header["root_offset"]
@@ -123,17 +159,17 @@ class PMTilesReader:
 
     @property
     def minzoom(self) -> int:
-        """Return minzoom."""
+        """The minimum zoom of the archive."""
         return self.header["min_zoom"]
 
     @property
     def maxzoom(self) -> int:
-        """Return maxzoom."""
+        """The maximum zoom of the archive."""
         return self.header["max_zoom"]
 
     @property
     def bounds(self) -> tuple[float, float, float, float]:
-        """Return Archive Bounds."""
+        """The bounding box of the archive as (min_lon, min_lat, max_lon, max_lat)."""
         return (
             self.header["min_lon_e7"] / 10000000,
             self.header["min_lat_e7"] / 10000000,
@@ -143,7 +179,7 @@ class PMTilesReader:
 
     @property
     def center(self) -> tuple[float, float, int]:
-        """Return Archive center."""
+        """The center of the archive as (center_lon, center_lat, center_zoom)."""
         return (
             self.header["center_lon_e7"] / 10000000,
             self.header["center_lat_e7"] / 10000000,
@@ -151,16 +187,11 @@ class PMTilesReader:
         )
 
     @property
-    def is_vector(self) -> bool:
-        """Return tile type."""
-        return self.header["tile_type"] == TileType.MVT
-
-    @property
     def tile_compression(self) -> Compression:
-        """Return tile compression type."""
+        """Return the compression type used for tiles."""
         return self.header["tile_compression"]
 
     @property
     def tile_type(self) -> TileType:
-        """Return tile type."""
+        """Return the type of tiles contained in the archive."""
         return self.header["tile_type"]
