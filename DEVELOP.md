@@ -26,9 +26,12 @@ $ pre-commit install
 
 ## Documentation
 
-Building locally:
+### Building locally
 
 ```
 uv run --group docs mkdocs serve
 ```
 
+### Publishing docs
+
+Documentation is automatically published when a new tag with `v*` is pushed to `main`. Alternatively, you can manually publish docs by triggering the docs publish workflow from the GitHub actions UI.
