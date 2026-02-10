@@ -1,0 +1,43 @@
+name: Release
+
+# Only run on new tags starting with `v`
+on:
+  push:
+    tags:
+      - "v*"
+
+jobs:
+  build:
+    name: Build dist
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v6
+
+      - name: Install a specific version of uv
+        uses: astral-sh/setup-uv@v6
+        with:
+          version: "latest"
+
+      - name: Build dist
+        run: |
+          uv run python -m build
+
+      - uses: actions/upload-artifact@v6
+        with:
+          path: ./dist/
+
+  upload_pypi:
+    needs: [build]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/download-artifact@v7
+        with:
+          name: artifact
+          path: dist
+          merge-multiple: true
+
+      - uses: pypa/gh-action-pypi-publish@release/v1
+        with:
+          user: __token__
+          password: ${{ secrets.PYPI_API_TOKEN }}
