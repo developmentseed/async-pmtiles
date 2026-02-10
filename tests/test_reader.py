@@ -1,67 +1,64 @@
-"""Test Reader."""
+"""Test PMTilesReader."""
 
-import os
+from pathlib import Path
 
 import pytest
+from obstore.store import LocalStore
 
-from aiopmtiles import Reader
-from aiopmtiles.io import LocalFileSystem
+from async_pmtiles import PMTilesReader
 
-FIXTURES_DIR = os.path.join(os.path.dirname(__file__), "fixtures")
-VECTOR_PMTILES = os.path.join(FIXTURES_DIR, "protomaps(vector)ODbL_firenze.pmtiles")
-RASTER_PMTILES = os.path.join(FIXTURES_DIR, "usgs-mt-whitney-8-15-webp-512.pmtiles")
-V2_PMTILES = os.path.join(FIXTURES_DIR, "stamen_toner(raster)CC-BY+ODbL_z3.pmtiles")
+FIXTURES_DIR = Path(__file__).parent / "fixtures"
+VECTOR_PMTILES = "protomaps(vector)ODbL_firenze.pmtiles"
+RASTER_PMTILES = "usgs-mt-whitney-8-15-webp-512.pmtiles"
+V2_PMTILES = "stamen_toner(raster)CC-BY+ODbL_z3.pmtiles"
 
 
 @pytest.mark.asyncio
 async def test_reader_vector():
-    """Test Reader with Vector PMTiles."""
-    async with Reader(VECTOR_PMTILES) as src:
-        assert isinstance(src.fs, LocalFileSystem)
-        assert src._header
-        assert src._header_offset == 0
-        assert src._header_length == 127
-        assert src.bounds
-        assert src.minzoom == 0
-        assert src.maxzoom == 14
-        assert src.center[2] == 0
-        assert src.is_vector
-        assert src.tile_compression.name == "GZIP"
-        assert not src.fs.file.closed
-        assert src.tile_type.name == "MVT"
+    """Test PMTilesReader with Vector PMTiles."""
+    store = LocalStore(FIXTURES_DIR)
 
-        metadata = await src.metadata()
-        assert "attribution" in metadata
-        assert "tilestats" in metadata
+    src = await PMTilesReader.open(VECTOR_PMTILES, store=store)
+    assert src.header
+    assert src.bounds == (11.154026, 43.7270125, 11.3289395, 43.8325455)
+    assert src.minzoom == 0
+    assert src.maxzoom == 14
+    assert src.center[2] == 0
+    assert src.is_vector
+    assert src.tile_compression.name == "GZIP"
 
-    assert src.fs.file.closed
+    assert src.tile_type.name == "MVT"
+
+    metadata = await src.metadata()
+    assert "attribution" in metadata
+    assert "tilestats" in metadata
 
 
 @pytest.mark.asyncio
 async def test_reader_raster():
-    """Test Reader with raster PMTiles."""
-    async with Reader(RASTER_PMTILES) as src:
-        assert isinstance(src.fs, LocalFileSystem)
-        assert src._header
-        assert src.bounds
-        assert src.minzoom == 8
-        assert src.maxzoom == 15
-        assert src.center[2] == 12
-        assert not src.is_vector
-        assert src.tile_compression.name == "NONE"
-        assert not src.fs.file.closed
-        assert src.tile_type.name == "WEBP"
+    """Test PMTilesReader with raster PMTiles."""
+    store = LocalStore(FIXTURES_DIR)
 
-        metadata = await src.metadata()
-        assert "attribution" in metadata
-        assert "type" in metadata
+    src = await PMTilesReader.open(RASTER_PMTILES, store=store)
+    assert src.header
+    assert src.bounds == (-118.31982, 36.56109, -118.26069, 36.59301)
+    assert src.minzoom == 8
+    assert src.maxzoom == 15
+    assert src.center[2] == 12
+    assert not src.is_vector
+    assert src.tile_compression.name == "NONE"
 
-    assert src.fs.file.closed
+    assert src.tile_type.name == "WEBP"
+
+    metadata = await src.metadata()
+    assert "attribution" in metadata
+    assert "type" in metadata
 
 
 @pytest.mark.asyncio
 async def test_reader_bad_spec():
     """Should raise an error if not spec == 3."""
-    with pytest.raises(AssertionError):
-        async with Reader(V2_PMTILES) as src:
-            pass
+    store = LocalStore(FIXTURES_DIR)
+
+    with pytest.raises(ValueError, match="Unsupported PMTiles spec version"):
+        await PMTilesReader.open(V2_PMTILES, store=store)

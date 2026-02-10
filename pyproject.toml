@@ -1,11 +1,12 @@
 [project]
-name = "aiopmtiles"
+name = "async-pmtiles"
+version = "0.1.0"
 description = "Async version of protomaps/PMTiles."
 readme = "README.md"
-requires-python = ">=3.11"
-license = {file = "LICENSE"}
+license = { file = "LICENSE" }
 authors = [
-    {name = "Vincent Sarago", email = "vincent@developmentseed.com"},
+    { name = "Vincent Sarago", email = "vincent@developmentseed.com" },
+    { name = "Kyle Barron", email = "kyle@developmentseed.org" },
 ]
 classifiers = [
     "Intended Audience :: Information Technology",
@@ -14,89 +15,44 @@ classifiers = [
     "Programming Language :: Python :: 3.11",
     "Programming Language :: Python :: 3.12",
     "Programming Language :: Python :: 3.13",
+    "Programming Language :: Python :: 3.14",
+    "Programming Language :: Python :: Implementation :: CPython",
     "Topic :: Scientific/Engineering :: GIS",
 ]
-dynamic = ["version"]
-dependencies = [
-    "pmtiles",
-    "httpx",
-    "aiofiles",
-    "aiocache",
-]
-
-[project.optional-dependencies]
-aws = [
-    "aioboto3"
-]
-gcp = [
-    "gcloud-aio-auth",
-    "gcloud-aio-storage"
-]
-test = [
-    "pytest",
-    "pytest-cov",
-    "pytest-asyncio",
-]
-dev = [
-    "pre-commit",
-]
-doc = [
-    "mkdocs",
-    "mkdocs-material",
-    "pygments",
-    "pdocs",
-]
+requires-python = ">=3.11"
+dependencies = ["obspec>=0.1.0", "pmtiles>=3.4.1"]
 
 [project.urls]
-Source = "https://github.com/developmentseed/aiopmtiles"
-Documentation = "https://developmentseed.org/aiopmtiles/"
+Source = "https://github.com/developmentseed/async-pmtiles"
+Documentation = "https://developmentseed.org/async-pmtiles/"
 
 [build-system]
-requires = ["flit>=3.2,<4"]
-build-backend = "flit_core.buildapi"
+requires = ["uv_build>=0.8.8,<0.9.0"]
+build-backend = "uv_build"
 
-[tool.flit.module]
-name = "aiopmtiles"
-
-[tool.flit.sdist]
-exclude = [
-    "tests/",
-    "docs/",
-    ".github/",
-    "CHANGES.md",
-    "CONTRIBUTING.md",
+[dependency-groups]
+dev = [
+    "build>=1.4.0",
+    "ipykernel>=7.2.0",
+    "obstore>=0.8.2",
+    "pytest>=9.0.2",
+    "pytest-asyncio>=1.3.0",
 ]
-
-[tool.coverage.run]
-branch = true
-parallel = true
-
-[tool.coverage.report]
-exclude_lines = [
-    "no cov",
-    "if __name__ == .__main__.:",
-    "if TYPE_CHECKING:",
-]
-
-[tool.isort]
-profile = "black"
-known_first_party = ["aiopmtiles"]
-known_third_party = ["pmtiles"]
-default_section = "THIRDPARTY"
-
-[tool.mypy]
-no_strict_optional = true
 
 [tool.ruff]
-select = [
-    "D1",  # pydocstyle errors
-    "E",  # pycodestyle errors
-    "W",  # pycodestyle warnings
-    "C",  # flake8-comprehensions
-    "B",  # flake8-bugbear
-]
-ignore = [
-    "E501",  # line too long, handled by black
-    "B008",  # do not perform function calls in argument defaults
-    "B905",  # ignore zip() without an explicit strict= parameter, only support with python >3.10
+select = ["ALL"]
+ignore = ["EM", "TD"]
+
+[tool.ruff.lint.per-file-ignores]
+"tests/*" = [
+    "S101",    # assert
+    "ANN001",  # Missing type annotation for function argument `geom`Ruff
+    "ANN201",  # Missing return type annotation for public function
+    "ANN202",  # Missing return type annotation for private function `it`
+    "ANN204",  # Missing return type annotation for special method
+    "D",       # docstring
+    "PLR2004", # Magic value used in comparison, consider replacing `100` with a constant variable
+    "S301",    # `pickle` and modules that wrap it can be unsafe when used to deserialize untrusted data, possible security issue
+    "S608",    #  Possible SQL injection vector through string-based query construction
+    "SLF001",  # Private member accessed
 ]
