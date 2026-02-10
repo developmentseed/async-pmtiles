@@ -130,7 +130,10 @@ class PMTilesReader:
         return json.loads(metadata)
 
     async def get_tile(self, x: int, y: int, z: int) -> Buffer | None:
-        """Load data for a specific tile given its x, y, and z coordinates."""
+        """Load data for a specific tile given its x, y, and z coordinates.
+
+        Note that no decompression is applied.
+        """
         tile_id = zxy_to_tileid(z, x, y)
 
         dir_offset = self.header["root_offset"]
