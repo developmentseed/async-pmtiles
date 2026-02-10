@@ -20,7 +20,7 @@ classifiers = [
     "Topic :: Scientific/Engineering :: GIS",
 ]
 requires-python = ">=3.11"
-dependencies = ["pmtiles>=3.4.1"]
+dependencies = ["pmtiles>=3.7.0"]
 
 [project.urls]
 Source = "https://github.com/developmentseed/async-pmtiles"

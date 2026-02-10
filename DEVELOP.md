@@ -2,26 +2,18 @@
 
 Issues and pull requests are more than welcome.
 
-**dev install**
+First install `uv`. Then set up with:
 
 ```bash
-$ git clone https://github.com/developmentseed/aiopmtiles.git
-$ cd aiopmtiles
-$ python -m pip install -e .["test","dev","aws","gcp"]
+git clone https://github.com/developmentseed/async-pmtiles
+cd async-pmtiles
+uv sync
 ```
 
-You can then run the tests with the following command:
+## Running tests
 
 ```sh
-python -m pytest --cov aiopmtiles --cov-report term-missing
-```
-
-**pre-commit**
-
-This repo is set to use `pre-commit` to run *isort*, *flake8*, *pydocstring*, *black* ("uncompromising Python code formatter") and mypy when committing new code.
-
-```bash
-$ pre-commit install
+uv run pytest
 ```
 
 ## Documentation
