@@ -1,7 +1,6 @@
 """async-pmtiles: asynchronous interface for reading PMTiles files."""
 
-__version__ = "0.1.0"
-
 from ._reader import PMTilesReader
+from ._version import __version__
 
-__all__ = ["PMTilesReader"]
+__all__ = ["PMTilesReader", "__version__"]

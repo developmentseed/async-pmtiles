@@ -25,7 +25,6 @@ name = "async-pmtiles"
 version = "0.1.0"
 source = { editable = "." }
 dependencies = [
-    { name = "obspec" },
     { name = "pmtiles" },
 ]
 
@@ -48,10 +47,7 @@ docs = [
 ]
 
 [package.metadata]
-requires-dist = [
-    { name = "obspec", specifier = ">=0.1.0" },
-    { name = "pmtiles", specifier = ">=3.4.1" },
-]
+requires-dist = [{ name = "pmtiles", specifier = ">=3.4.1" }]
 
 [package.metadata.requires-dev]
 dev = [
@@ -893,18 +889,6 @@ wheels = [
 ]
 
 [[package]]
-name = "obspec"
-version = "0.1.0"
-source = { registry = "https://pypi.org/simple" }
-dependencies = [
-    { name = "typing-extensions", marker = "python_full_version < '3.12'" },
-]
-sdist = { url = "https://files.pythonhosted.org/packages/e2/94/7a9ad6927cac6ec7680e11772fb692145a05a93bafd80b84f6f0ef12f4e7/obspec-0.1.0.tar.gz", hash = "sha256:b189781a53f82ef8d6abf0c9e77fd4c46ac9f244d5a91eb35ee61c2e2b204a4a", size = 117254, upload-time = "2025-06-25T05:24:00.002Z" }
-wheels = [
-    { url = "https://files.pythonhosted.org/packages/bb/69/96feeac84ce0b871567225c78515f3b557c023e72ed9b4f1833f3662bd6b/obspec-0.1.0-py3-none-any.whl", hash = "sha256:307f0fa2c2998b324ecf0eed6a2a89049a4c40c9b1fa2b5e1af28f0ee72136b3", size = 15231, upload-time = "2025-06-25T05:23:58.735Z" },
-]
-
-[[package]]
 name = "obstore"
 version = "0.8.2"
 source = { registry = "https://pypi.org/simple" }
@@ -1118,11 +1102,11 @@ wheels = [
 
 [[package]]
 name = "pmtiles"
-version = "3.6.0"
+version = "3.7.0"
 source = { registry = "https://pypi.org/simple" }
-sdist = { url = "https://files.pythonhosted.org/packages/8a/1b/47913a30c111189d8188d357ed41601efb848e9ba8cec7ccb6c74e3c2b5b/pmtiles-3.6.0.tar.gz", hash = "sha256:02871f649e81d408d6149824402d310ddfefe6b9bdf646d6784ef3221b36286f", size = 13826, upload-time = "2026-02-03T22:30:10.75Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/16/3e/47e371add5ba09615c95c5ef72d8c3be471819d6dce07bae26c8e15d0687/pmtiles-3.7.0.tar.gz", hash = "sha256:ed8b04d550d104c81a759c9cc07bfc5743750f62e751f840425f4b9f4bb903df", size = 14582, upload-time = "2026-02-10T16:00:22Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/bb/7b/952fb2f39d9bd26b4618a1d0919d41a465f88226c8742569116ddd28b67f/pmtiles-3.6.0-py3-none-any.whl", hash = "sha256:671c023bb1138384a0caf3194197c92b9bb2bb8f557b81ffd0a356a919dfcd9e", size = 16030, upload-time = "2026-02-03T22:30:09.035Z" },
+    { url = "https://files.pythonhosted.org/packages/d6/de/c0f177fd73818e0d671903ed986d4541674b0fad4365c7ecfd5a0af23a6d/pmtiles-3.7.0-py3-none-any.whl", hash = "sha256:d1a7a7a166ce3c5c8756cc2c8e4b0aa55e3d854fbd4517c963de16c39b631b14", size = 16848, upload-time = "2026-02-10T16:00:20.925Z" },
 ]
 
 [[package]]
