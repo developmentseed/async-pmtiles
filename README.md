@@ -4,6 +4,11 @@ An asynchronous [PMTiles] reader for Python.
 
 The [PMTiles format] is a cloud-native, compressed, single-file archive for storing tiled vector and raster map data.
 
+This implementation is fully asynchronous and integrates with [Obstore] and [Obspec] for efficiently loading data from remote files.
+
+[Obstore]: https://developmentseed.org/obstore/latest/
+[Obspec]: https://developmentseed.org/obspec/latest/
+
 [PMTiles]: https://docs.protomaps.com/
 [PMTiles format]: https://docs.protomaps.com/pmtiles/
 
@@ -16,6 +21,8 @@ pip install async-pmtiles
 ```
 
 ## Example
+
+The easiest way to get started is by using [Obstore] to fetch remote data.
 
 ```python
 from async_pmtiles import PMTilesReader
