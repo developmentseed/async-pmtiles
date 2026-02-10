@@ -27,7 +27,7 @@ if TYPE_CHECKING:
         from typing_extensions import Buffer
 
 
-class GetRangeAsync(Protocol):
+class Store(Protocol):
     """A generic protocol for accessing byte ranges of files.
 
     This is compatible with [obspec.GetRangeAsync][obspec.GetRangeAsync] and is
@@ -68,14 +68,14 @@ class PMTilesReader:
     path: str
     """The path within the store to the PMTiles file."""
 
-    store: GetRangeAsync
+    store: Store
     """A reference to the store used for fetching byte ranges."""
 
     header: HeaderDict
     """The underlying raw PMTiles header metadata."""
 
     @classmethod
-    async def open(cls, path: str, *, store: GetRangeAsync) -> Self:
+    async def open(cls, path: str, *, store: Store) -> Self:
         """Open a PMTiles file.
 
         Args:

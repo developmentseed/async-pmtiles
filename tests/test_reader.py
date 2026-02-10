@@ -9,7 +9,7 @@ from aiohttp import ClientSession
 from obstore.store import LocalStore
 from pmtiles.tile import Compression, TileType
 
-from async_pmtiles import GetRangeAsync, PMTilesReader
+from async_pmtiles import PMTilesReader, Store
 
 FIXTURES_DIR = Path(__file__).parent / "fixtures"
 VECTOR_PMTILES = "protomaps(vector)ODbL_firenze.pmtiles"
@@ -65,7 +65,7 @@ async def test_reader_bad_spec():
 
 
 @dataclass
-class AiohttpAdapter(GetRangeAsync):
+class AiohttpAdapter(Store):
     session: ClientSession
 
     async def get_range_async(
