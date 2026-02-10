@@ -172,7 +172,7 @@ docs = [
 ]
 
 [package.metadata]
-requires-dist = [{ name = "pmtiles", specifier = ">=3.4.1" }]
+requires-dist = [{ name = "pmtiles", specifier = ">=3.7.0" }]
 
 [package.metadata.requires-dev]
 dev = [
