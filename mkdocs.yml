@@ -1,0 +1,148 @@
+# Project Information
+site_name: async-pmtiles
+site_description: "Asynchronous PMTiles reader for Python."
+site_author: Development Seed
+
+# Repository
+repo_name: "developmentseed/async-pmtiles"
+repo_url: "http://github.com/developmentseed/async-pmtiles"
+edit_uri: "blob/main/docs/"
+# Note: trailing slash recommended with mike:
+# https://squidfunk.github.io/mkdocs-material/setup/setting-up-versioning/#publishing-a-new-version
+site_url: "https://developmentseed.org/async-pmtiles/"
+docs_dir: docs
+
+# Social links
+extra:
+  social:
+    - icon: "fontawesome/brands/github"
+      link: "https://github.com/developmentseed"
+    - icon: "fontawesome/brands/linkedin"
+      link: "https://www.linkedin.com/company/development-seed"
+  version:
+    alias: true
+    provider: mike
+
+# Layout
+nav:
+  - Home: "index.md"
+  - Usage: "usage.md"
+  - Changelog: "CHANGELOG.md"
+  - Contributing: "DEVELOP.md"
+
+watch:
+  - src/
+  - docs/
+  - README.md
+
+theme:
+  language: en
+  name: material
+  custom_dir: docs/overrides
+  logo: assets/logo_no_text.png
+  palette:
+    # Palette toggle for automatic mode
+    - media: "(prefers-color-scheme)"
+      toggle:
+        icon: material/brightness-auto
+        name: Switch to light mode
+
+    # Palette toggle for light mode
+    - media: "(prefers-color-scheme: light)"
+      primary: "red"
+      accent: "light red"
+      toggle:
+        icon: material/brightness-7
+        name: Switch to dark mode
+
+    # Palette toggle for dark mode
+    - media: "(prefers-color-scheme: dark)"
+      scheme: slate
+      primary: "red"
+      accent: "light red"
+      toggle:
+        icon: material/brightness-4
+        name: Switch to system preference
+
+  font:
+    text: "Nunito Sans"
+    code: "Fira Code"
+
+  features:
+    - content.code.annotate
+    - content.code.copy
+    - navigation.indexes
+    - navigation.instant
+    - navigation.tracking
+    - search.suggest
+    - search.share
+
+plugins:
+  - autorefs:
+      resolve_closest: true
+  - blog
+  - search
+  - social:
+      enabled: !ENV [CI, false]
+  - mike:
+      alias_type: "copy"
+      canonical_version: "latest"
+  - mkdocstrings:
+      enable_inventory: true
+      handlers:
+        python:
+          paths: [src]
+          options:
+            docstring_section_style: list
+            docstring_style: google
+            inherited_members: true
+            line_length: 80
+            separate_signature: true
+            show_root_heading: true
+            show_signature_annotations: true
+            show_source: false
+            show_symbol_type_toc: true
+            signature_crossrefs: true
+            extensions:
+              - griffe_inherited_docstrings
+
+          inventories:
+            - https://affine.readthedocs.io/en/latest/objects.inv
+            - https://developmentseed.org/async-tiff/latest/objects.inv
+            - https://developmentseed.org/morecantile/objects.inv
+            - https://developmentseed.org/obstore/latest/objects.inv
+            - https://docs.python.org/3/objects.inv
+            - https://numpy.org/doc/stable/objects.inv
+            - https://pyproj4.github.io/pyproj/stable/objects.inv
+            - https://rasterio.readthedocs.io/en/stable/objects.inv
+
+# https://github.com/developmentseed/titiler/blob/50934c929cca2fa8d3c408d239015f8da429c6a8/docs/mkdocs.yml#L115-L140
+markdown_extensions:
+  - admonition
+  - attr_list
+  - codehilite:
+      guess_lang: false
+  - def_list
+  - footnotes
+  - md_in_html
+  - pymdownx.arithmatex
+  - pymdownx.betterem
+  - pymdownx.caret:
+      insert: false
+  - pymdownx.details
+  - pymdownx.emoji:
+      emoji_index: !!python/name:material.extensions.emoji.twemoji
+      emoji_generator: !!python/name:material.extensions.emoji.to_svg
+  - pymdownx.escapeall:
+      hardbreak: true
+      nbsp: true
+  - pymdownx.magiclink:
+      hide_protocol: true
+      repo_url_shortener: true
+  - pymdownx.smartsymbols
+  - pymdownx.superfences
+  - pymdownx.tasklist:
+      custom_checkbox: true
+  - pymdownx.tilde
+  - toc:
+      permalink: true

@@ -23,3 +23,12 @@ This repo is set to use `pre-commit` to run *isort*, *flake8*, *pydocstring*, *b
 ```bash
 $ pre-commit install
 ```
+
+## Documentation
+
+Building locally:
+
+```
+uv run --group docs mkdocs serve
+```
+
