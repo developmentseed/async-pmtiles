@@ -584,11 +584,13 @@
 <h1 id="async-pmtiles">async-pmtiles<a class="headerlink" href="#async-pmtiles" title="Permanent link">&para;</a></h1>
 <p>An asynchronous <a href="https://docs.protomaps.com/">PMTiles</a> reader for Python.</p>
 <p>The <a href="https://docs.protomaps.com/pmtiles/">PMTiles format</a> is a cloud-native, compressed, single-file archive for storing tiled vector and raster map data.</p>
+<p>This implementation is fully asynchronous and integrates with <a href="https://developmentseed.org/obstore/latest/">Obstore</a> and <a href="https://developmentseed.org/obspec/latest/">Obspec</a> for efficiently loading data from remote files.</p>
 <p><strong>Documentation</strong>: <a href="https://developmentseed.org/async-pmtiles/">developmentseed.org/async-pmtiles/</a></p>
 <h2 id="install">Install<a class="headerlink" href="#install" title="Permanent link">&para;</a></h2>
 <div class="highlight"><pre><span></span><code>pip install async-pmtiles
 </code></pre></div>
 <h2 id="example">Example<a class="headerlink" href="#example" title="Permanent link">&para;</a></h2>
+<p>The easiest way to get started is by using <a href="https://developmentseed.org/obstore/latest/">Obstore</a> to fetch remote data.</p>
 <div class="highlight"><pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">async_pmtiles</span><span class="w"> </span><span class="kn">import</span> <span class="n">PMTilesReader</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">obstore.store</span><span class="w"> </span><span class="kn">import</span> <span class="n">HTTPStore</span>
 
