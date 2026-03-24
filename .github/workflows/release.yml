@@ -35,7 +35,7 @@ jobs:
     environment:
       # Note: this environment must be configured in the repo settings
       name: pypi-release
-      url: https://pypi.org/p/lonboard
+      url: https://pypi.org/p/async-pmtiles
     permissions:
       id-token: write # IMPORTANT: this permission is mandatory for trusted publishing
     steps:
