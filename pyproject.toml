@@ -54,7 +54,7 @@ docs = [
 
 [tool.ruff]
 select = ["ALL"]
-ignore = ["EM", "TD"]
+ignore = ["CPY", "EM", "TD"]
 
 [tool.ruff.lint.per-file-ignores]
 "tests/*" = [
